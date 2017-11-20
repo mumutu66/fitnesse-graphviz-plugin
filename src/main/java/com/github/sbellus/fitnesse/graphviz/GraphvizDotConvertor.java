@@ -19,9 +19,23 @@ import com.github.sbellus.fitnesse.graphviz.graphics.GraphicsWikiToSvgConvertor;
 
 public class GraphvizDotConvertor implements GraphicsWikiToSvgConvertor {
     private String dotExecutable;
+
+    private static String OS = System.getProperty("os.name").toLowerCase();
     
     public GraphvizDotConvertor(String dotExecutable) {
         this.dotExecutable = dotExecutable;
+    }
+    
+    private static boolean isWindows() {
+        return (OS.indexOf("win") >= 0);
+    }
+
+    private static boolean isMac() {
+        return (OS.indexOf("mac") >= 0);
+    }
+
+    private static boolean isUnix() {
+        return (OS.indexOf("nux") >= 0);
     }
     
     public GraphicsSvg convert(GraphicsWiki wiki) throws GraphicsWikiToSvgConvertionException   {
@@ -41,9 +55,16 @@ public class GraphvizDotConvertor implements GraphicsWikiToSvgConvertor {
             // convert it to picture
             String dotPath = FilenameUtils.getFullPath(dotFile.toString());
 
-            Process runner = Runtime.getRuntime().exec(
+            Process runner = null;
+            if (isWindows()) {
+                runner = Runtime.getRuntime().exec(
                     new String[] { "cmd.exe", "/c", dotExecutable, "-Tsvg", dotFile.getName() }, null,
                     new File(dotPath));
+            } else if (isUnix()) {
+                runner = Runtime.getRuntime().exec(
+                    new String[] { dotExecutable, "-Tsvg", dotFile.getName() }, null,
+                    new File(dotPath));
+            }
 
             InputStream stdout = runner.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(stdout));
